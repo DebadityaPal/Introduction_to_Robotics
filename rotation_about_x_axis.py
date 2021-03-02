@@ -1,53 +1,68 @@
 import math
 
-def rotate_and_translate():
+
+def compute_transform(X, Y):
+    result = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    for i in range(len(X)):
+        for j in range(len(Y[0])):
+            for k in range(len(Y)):
+                result[i][j] += X[i][k] * Y[k][j]
+    return result
+
+
+def compute_point(X, Y):
+    result = [0, 0, 0]
+    for i in range(len(X)):
+        for j in range(len(Y)):
+            result[i] += X[i][j] * Y[j]
+    return result
+
+
+def transform():
     coord = list(
         map(
             int,
             input("Enter the point in x y z coordinates: ").strip().split(),
         )
     )[:3]
-    theta = int(
-        input(
-            "Enter the angle in degrees by which the frame is rotated about the x-axis: "
-        )
-    )
-    translation = list(
+    theta = list(
         map(
             int,
-            input("Enter the amount of translation on each axis(x y z): ")
+            input(
+                "Enter the angles of rotation about the x y z coordinates in degrees: "
+            )
             .strip()
             .split(),
         )
     )[:3]
 
-    transformation_matrix = [
-        [1, 0, 0, translation[0]],
-        [
-            0,
-            math.cos(math.radians(theta)),
-            math.sin(math.radians(theta)),
-            translation[1],
-        ],
-        [
-            0,
-            -1 * math.sin(math.radians(theta)),
-            math.cos(math.radians(theta)),
-            translation[2],
-        ],
-        [0, 0, 0, 1],
+    rotation_X = [
+        [1, 0, 0],
+        [0, math.cos(math.radians(theta[0])), -math.sin(math.radians(theta[0]))],
+        [0, math.sin(math.radians(theta[0])), math.cos(math.radians(theta[0]))],
     ]
 
-    coord.append(1)
-    result = [0, 0, 0, 0]
+    rotation_Y = [
+        [math.cos(math.radians(theta[1])), 0, math.sin(math.radians(theta[1]))],
+        [0, 1, 0],
+        [-math.sin(math.radians(theta[1])), 0, math.cos(math.radians(theta[1]))],
+    ]
 
-    for elemX in range(len(result)):
-        for elemY in range(len(transformation_matrix[elemX])):
-            result[elemX] += transformation_matrix[elemX][elemY] * coord[elemY]
-        
+    rotation_Z = [
+        [math.cos(math.radians(theta[2])), -math.sin(math.radians(theta[2])), 0],
+        [math.sin(math.radians(theta[2])), math.cos(math.radians(theta[2])), 0],
+        [0, 0, 1],
+    ]
 
-    print(f"Coordinates of Point {coord[0], coord[1], coord[2]} with respect to original frame is {result[0], result[1], result[2]}")
+    transformation = compute_transform(rotation_X, rotation_Y)
+    transformation = compute_transform(transformation, rotation_Z)
+    final_result = compute_point(transformation, coord)
+
+    print(
+        f"Coordinates of Point {coord[0], coord[1], coord[2]} with respect to original frame is {round(final_result[0], 5), round(final_result[1], 5), round(final_result[2], 5)}"
+    )
     input("Press Enter to exit...")
 
+
 if __name__ == "__main__":
-    rotate_and_translate()
+    transform()
